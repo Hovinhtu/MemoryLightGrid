@@ -8,12 +8,17 @@
       background: #111;
       color: white;
       font-family: sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
       margin: 0;
       padding: 20px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
+
+    h2 {
+      text-align: center;
+    }
+
     .controls {
       display: flex;
       gap: 10px;
@@ -21,17 +26,28 @@
       justify-content: center;
       margin-bottom: 20px;
     }
+
     .controls label {
       font-size: 14px;
       display: flex;
       flex-direction: column;
       align-items: flex-start;
     }
+
+    #main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
     #grid {
       display: grid;
       gap: 5px;
       margin-bottom: 20px;
     }
+
     .cell {
       width: 60px;
       height: 60px;
@@ -43,14 +59,16 @@
       border-radius: 8px;
       transition: background 0.2s;
     }
+
     .cell.active {
       background: yellow;
       color: black;
     }
+
     .result {
-      font-size: 16px;
+      font-size: 18px;
       color: #0f0;
-      margin-top: 10px;
+      text-align: center;
     }
   </style>
 </head>
@@ -77,9 +95,10 @@
     <button onclick="startSequence()">Start</button>
   </div>
 
-  <div id="grid"></div>
-
-  <div class="result" id="result">✅ Answer: []</div>
+  <div id="main">
+    <div id="grid"></div>
+    <div class="result" id="result">✅ Answer: []</div>
+  </div>
 
   <audio id="beep" src="https://freesound.org/data/previews/64/64964_634166-lq.mp3"></audio>
 
@@ -117,7 +136,7 @@
       return new Promise((res) => setTimeout(res, ms));
     }
 
-    function startSequence() {
+    async function startSequence() {
       const rows = parseInt(document.getElementById("rows").value);
       const cols = parseInt(document.getElementById("cols").value);
       const total = rows * cols;
@@ -128,7 +147,6 @@
 
       createGrid(rows, cols);
 
-      // Random unique indexes
       const pool = Array.from({ length: total }, (_, i) => i);
       const selected = [];
 
@@ -137,12 +155,16 @@
         selected.push(rand);
       }
 
-      // Show result after
       result.textContent = "🧠 Memorize the lights...";
-      lightUpSequence(selected, speed).then(() => {
-        result.textContent = `✅ Answer: [${selected.join(", ")}]`;
-        console.log("✅ Correct answer:", selected);
-      });
+      await lightUpSequence(selected, speed);
+
+      for (let i = 5; i >= 1; i--) {
+        result.textContent = `⏳ Answer will show in ${i} second${i === 1 ? '' : 's'}...`;
+        await wait(1000);
+      }
+
+      result.textContent = `✅ Answer: [${selected.join(", ")}]`;
+      console.log("✅ Correct answer:", selected);
     }
 
     // Init
